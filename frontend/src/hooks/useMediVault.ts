@@ -143,11 +143,61 @@ export function useMediVault(wallet: WalletState) {
     }
   }, [getContract]);
 
+  const getActiveTrials = useCallback(async () => {
+    if (!wallet.provider) return [];
+    try {
+      const contract = new ethers.Contract(MEDIVAULT_ADDRESS, MEDIVAULT_ABI, wallet.provider);
+      const ids: string[] = await contract.getActiveTrialIds();
+      const trials = await Promise.all(
+        ids.map(async (trialId) => {
+          const info = await contract.getTrialPublicInfo(trialId);
+          return {
+            trialId,
+            sponsor: info[0],
+            maxParticipants: Number(info[1]),
+            currentMatches: Number(info[2]),
+            createdAt: Number(info[3]),
+            active: info[4],
+            metadataURI: info[5],
+          };
+        })
+      );
+      return trials;
+    } catch (err) {
+      console.error("getActiveTrials failed:", err);
+      return [];
+    }
+  }, [wallet.provider]);
+
+  const registerTrial = useCallback(async (data: TrialInput) => {
+    setLoading(true);
+    try {
+      // Demo stub — production flow mirrors registerProfile with FHEVM encryption per field
+      console.log("Registering encrypted trial:", data.trialId);
+      await new Promise((r) => setTimeout(r, 2000));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const hasRequestedMatch = useCallback(async (trialId: string): Promise<boolean> => {
+    if (!wallet.address || !wallet.provider) return false;
+    try {
+      const contract = new ethers.Contract(MEDIVAULT_ADDRESS, MEDIVAULT_ABI, wallet.provider);
+      return await contract.hasRequestedMatch(wallet.address, trialId);
+    } catch {
+      return false;
+    }
+  }, [wallet.address, wallet.provider]);
+
   return {
     hasProfile,
     loading,
     registerProfile,
     deleteProfile,
     requestEligibilityCheck,
+    getActiveTrials,
+    registerTrial,
+    hasRequestedMatch,
   };
 }
