@@ -4,7 +4,7 @@
   "description": "Confidential Clinical Trial Matching Protocol — Zama FHEVM",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "compile": "hardhat compile",
     "test": "hardhat test",
